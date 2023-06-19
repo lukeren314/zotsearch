@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Metadata {
+  id          BigInt   @id @default(autoincrement())
+  lastChecked DateTime @default(now())
+  lastYear    String?
+  lastQuarter String?
+  isUpdating  Boolean  @default(false)
+}
+
+model Course {
+  id               String   @id
+  department       String
+  number           String
+  departmentNumber String
+  school           String
+  title            String
+  description      String
+  courseLevel      String
+  departmentAlias  String
+  unitsMin         Float
+  unitsMax         Float
+  departmentName   String
+  prerequisiteText String
+  repeatability    String
+  gradingOption    String
+  concurrent       String
+  sameAs           String
+  restrictionText  String
+  restrictions     String[]
+  overlap          String
+  corequisite      String
+  geText           String
+  prerequisites    String[]
+  prerequisiteFor  String[]
+  geList           String[]
+  terms            String[]
+  tokens           String[]
+  instructors      String[]
+  gradeACounts     Int[]
+  gradeBCounts     Int[]
+  gradeCCounts     Int[]
+  gradeDCounts     Int[]
+  gradeFCounts     Int[]
+  gradePCounts     Int[]
+  gradeNPCounts    Int[]
+  gradeWCounts     Int[]
+  averageGPAs      Float[]
+  averageGPA       Float?
+}
+
+model Restriction {
+  text String @id
+}
+
+model Department {
+  text String @id
+  name String
+}
+
+model School {
+  text String @id
+}
+
+model CourseLevel {
+  text String @id
+}
+
+model CourseGe {
+  text String @id
+}
+
+model Term {
+  year    Int
+  quarter String
+
+  @@id([year, quarter])
+}
