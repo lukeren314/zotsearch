@@ -38,9 +38,6 @@ next-env.d.ts
 # ide
 .vscode
 
-# migrations
-prisma/migrations
-
 # firebase
 .firebas
 firebase-debug.log
