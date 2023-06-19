@@ -42,4 +42,8 @@ next-env.d.ts
 prisma/migrations
 
 # firebase
+.firebas
 firebase-debug.log
+
+# github
+.github
