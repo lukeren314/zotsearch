@@ -33,6 +33,8 @@ class DatabaseWrapper {
     // check if courses need to be updated
     const metadata = await this._getMetadata();
     if (!metadata.lastYear || !metadata.lastQuarter) {
+      const term = await this._getNewestTerm();
+      this._updateMetadataLastTerm(metadata, term);
       return true;
     }
     if (
@@ -45,20 +47,15 @@ class DatabaseWrapper {
       return false;
     }
     this._updateMetadataLastChecked(metadata);
-    if (!(await this._shouldUpdateCourses(metadata))) {
+    const termString = await this._getNewestTermString();
+    if (termString == this._getTermString(metadata.lastYear, metadata.lastQuarter)) {
       return false;
     }
-    await this._setMetadataLastTerm(metadata, metadata.lastYear, metadata.lastQuarter);
+    this._updateMetadataLastTerm(metadata, this._getTerm(termString));
     return true;
   }
-  private async _setMetadataLastTerm(metadata: Metadata, lastYear: string, lastQuarter: string) {
-    await this.db.metadata.update({
-      where: { id: metadata.id },
-      data: { lastYear, lastQuarter },
-    });
-  }
-  private _getTerm(year: string, quarter: string): string {
-    return `${year} ${quarter}`
+  private _getTermString(year: string, quarter: string): string {
+    return `${year} ${quarter}`;
   }
   public async updateCourses() {
     const metadata = await this._getMetadata();
@@ -133,13 +130,12 @@ class DatabaseWrapper {
       data: { lastChecked: today },
     });
   }
-  private async _shouldUpdateCourses(metadata: Metadata): Promise<boolean> {
-    if (!metadata.lastYear || !metadata.lastQuarter) {
-      return true;
-    }
-    const lastTerm = this._getTerm(metadata.lastYear, metadata.lastQuarter);
+  private async _getNewestTerm(): Promise<Term> {
+    return this._getTerm(await this._getNewestTermString());
+  }
+  private async _getNewestTermString(): Promise<string> {
     const availableTerms = await fetchCourseTerms();
-    return availableTerms[availableTerms.length - 1] != lastTerm;
+    return availableTerms[availableTerms.length - 1];
   }
   private async _updateCourseDB(courses: Course[]) {
     await this.db.course.deleteMany();
@@ -172,8 +168,7 @@ class DatabaseWrapper {
       data: this._getCourseGes(courses),
     });
   }
-  private async _updateMetadataLastTerm(term: Term) {
-    const metadata = await this._getMetadata();
+  private async _updateMetadataLastTerm(metadata: Metadata, term: Term) {
     await this.db.metadata.update({
       where: { id: metadata.id },
       data: {
@@ -182,19 +177,9 @@ class DatabaseWrapper {
       },
     });
   }
-  private _getQuarterOrdinal(quarter: Quarter): number {
-    switch (quarter) {
-      case "Winter":
-        return 0;
-      case "Spring":
-        return 1;
-      case "Summer1":
-      case "Summer2":
-      case "Summer10wk":
-        return 2;
-      case "Fall":
-        return 3;
-    }
+  private _getTerm(termString: string): Term {
+    const termSplit = termString.split(" ");
+    return { year: parseInt(termSplit[0]), quarter: termSplit[1] };
   }
   private _getGradesDataMap(gradeRaws: GradeRaw[]): GradesDataMap {
     const gradesDataMap: GradesDataMap = {};
@@ -380,13 +365,7 @@ class DatabaseWrapper {
         filterSet.add(term);
       }
     }
-    return Array.from(filterSet).map((term) => {
-      const s = term.split(" ");
-      return {
-        year: parseInt(s[0]),
-        quarter: s[1],
-      };
-    });
+    return Array.from(filterSet).map((term) => this._getTerm(term));
   }
   private _getCourseRestrictions(courses: Course[]): Restriction[] {
     const filterSet = new Set<string>();
