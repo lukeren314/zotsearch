@@ -24,7 +24,7 @@ This application was built using the following technology stack:
 - Next.js - Frontend/Backend Framework
 - Prisma - Database Framework
 - CockroachDB - Database
-- Firebase - Hosting platform
+- Vercel - Hosting platform
 
 ## Report a Bug
 
