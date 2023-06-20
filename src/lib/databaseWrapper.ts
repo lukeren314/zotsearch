@@ -14,17 +14,12 @@ import {
   CourseRaw,
   SearchParams,
   QueryParams,
-  ScheduleOfClassesRaw,
   Quarter,
   GradeRaw,
   GradesData,
   GradesDataMap,
 } from "./databaseTypes";
-import {
-  fetchCoursesRaw,
-  fetchGradeRaws,
-  fetchScheduleOfClassesRaw,
-} from "@/lib/api";
+import { fetchCourseTerms, fetchCoursesRaw, fetchGradeRaws } from "@/lib/api";
 import prisma from "./prisma";
 import { removeStopwords } from "stopword";
 const UPDATE_INTERVAL = 1000 * 60 * 60 * 24;
@@ -37,6 +32,9 @@ class DatabaseWrapper {
   public async getShouldUpdate(): Promise<boolean> {
     // check if courses need to be updated
     const metadata = await this._getMetadata();
+    if (!metadata.lastYear || !metadata.lastQuarter) {
+      return true;
+    }
     if (
       new Date().getTime() - metadata.lastChecked.getTime() <
       UPDATE_INTERVAL
@@ -50,7 +48,17 @@ class DatabaseWrapper {
     if (!(await this._shouldUpdateCourses(metadata))) {
       return false;
     }
+    await this._setMetadataLastTerm(metadata, metadata.lastYear, metadata.lastQuarter);
     return true;
+  }
+  private async _setMetadataLastTerm(metadata: Metadata, lastYear: string, lastQuarter: string) {
+    await this.db.metadata.update({
+      where: { id: metadata.id },
+      data: { lastYear, lastQuarter },
+    });
+  }
+  private _getTerm(year: string, quarter: string): string {
+    return `${year} ${quarter}`
   }
   public async updateCourses() {
     const metadata = await this._getMetadata();
@@ -69,8 +77,15 @@ class DatabaseWrapper {
     });
   }
   public async searchCourses(params: SearchParams): Promise<Course[]> {
+    if (await this._isUpdating()) {
+      return [];
+    }
     const queryParams = this._convertParams(params);
     return await this.db.course.findMany(queryParams);
+  }
+  private async _isUpdating(): Promise<boolean> {
+    const metadata = await this._getMetadata();
+    return metadata.isUpdating;
   }
   public async getRestrictions(): Promise<Restriction[]> {
     return await this.db.restriction.findMany();
@@ -122,44 +137,9 @@ class DatabaseWrapper {
     if (!metadata.lastYear || !metadata.lastQuarter) {
       return true;
     }
-    const lastTerm: Term = {
-      year: parseInt(metadata.lastYear),
-      quarter: metadata.lastQuarter as Quarter,
-    };
-    const nextTerm: Term = this._getNextTerm(lastTerm);
-    const socRaw: ScheduleOfClassesRaw = await fetchScheduleOfClassesRaw(
-      nextTerm
-    );
-    if (socRaw && socRaw.schools && socRaw.schools.length) {
-      return true;
-    }
-    return false;
-  }
-  private _getNextTerm(lastTerm: Term): Term {
-    if (lastTerm.quarter.startsWith("Summer")) {
-      return {
-        year: lastTerm.year + 1,
-        quarter: "Fall",
-      };
-    }
-    return {
-      year: lastTerm.year,
-      quarter: this._getNextQuarter(lastTerm.quarter),
-    };
-  }
-  private _getNextQuarter(
-    quarter: string
-  ): "Fall" | "Winter" | "Spring" | "Summer10wk" {
-    if (quarter === "Fall") {
-      return "Winter";
-    }
-    if (quarter === "Winter") {
-      return "Spring";
-    }
-    if (quarter === "Spring") {
-      return "Summer10wk";
-    }
-    return "Fall";
+    const lastTerm = this._getTerm(metadata.lastYear, metadata.lastQuarter);
+    const availableTerms = await fetchCourseTerms();
+    return availableTerms[availableTerms.length - 1] != lastTerm;
   }
   private async _updateCourseDB(courses: Course[]) {
     await this.db.course.deleteMany();
@@ -173,9 +153,8 @@ class DatabaseWrapper {
     await this.db.course.createMany({
       data: courses,
     });
-    const courseTerms: Term[] = this._getCourseTerms(courses);
     await this.db.term.createMany({
-      data: courseTerms,
+      data: this._getCourseTerms(courses),
     });
     await this.db.restriction.createMany({
       data: this._getCourseRestrictions(courses),
@@ -192,24 +171,6 @@ class DatabaseWrapper {
     await this.db.courseGe.createMany({
       data: this._getCourseGes(courses),
     });
-    const lastCourseTerm: Term = this._getLastCourseTerm(courseTerms);
-    await this._updateMetadataLastTerm(lastCourseTerm);
-  }
-  private _getLastCourseTerm(courseTerms: Term[]): Term {
-    const maxTerm = courseTerms[0];
-    for (let term of courseTerms) {
-      if (maxTerm.year < term.year) {
-        maxTerm.year = term.year;
-        maxTerm.quarter = term.quarter;
-      } else if (
-        maxTerm.year == term.year &&
-        this._getQuarterOrdinal(maxTerm.quarter as Quarter) <
-          this._getQuarterOrdinal(term.quarter as Quarter)
-      ) {
-        maxTerm.quarter = term.quarter;
-      }
-    }
-    return maxTerm;
   }
   private async _updateMetadataLastTerm(term: Term) {
     const metadata = await this._getMetadata();

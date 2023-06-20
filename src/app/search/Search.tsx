@@ -157,7 +157,7 @@ export default function Search() {
       <LoadingOverlay
         loader={
           <Box>
-            <Text>Updating the course database!</Text>
+            <Text>Updating the course database! This may take a while...</Text>
             <Center>
               <Loader />
             </Center>

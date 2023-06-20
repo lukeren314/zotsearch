@@ -44,7 +44,12 @@ export default function AppHeader() {
           </Tooltip>
           <Tooltip label="About">
             <ActionIcon radius="xl">
-              <IconQuestionMark />
+              <Link
+                href="https://github.com/lukeren314/zotsearch"
+                target="_blank"
+              >
+                <IconQuestionMark />
+              </Link>
             </ActionIcon>
           </Tooltip>
           <Switch

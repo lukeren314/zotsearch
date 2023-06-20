@@ -4,7 +4,7 @@ by Luke Ren
 
 ## About
 
-ZotSearch is a search engine for courses at UCI.
+ZotSearch is a search engine for courses at UCI hosted at https://zotsearch.vercel.app/.
 
 ## Features
 

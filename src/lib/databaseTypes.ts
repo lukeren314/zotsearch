@@ -56,10 +56,6 @@ export interface GradeRaw {
   averageGPA: number;
 }
 
-export interface ScheduleOfClassesRaw {
-  schools: [];
-}
-
 export type Quarter =
   | "Fall"
   | "Winter"
