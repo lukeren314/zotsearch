@@ -432,6 +432,11 @@ class DatabaseWrapper {
         { number: params.orderByDirection },
       ];
     }
+    if (params.orderBy == "averageGPA") {
+      return [
+        { averageGPA: params.orderByDirection },
+      ];
+    }
     return;
   }
   private _getWhereInput(params: SearchParams): Prisma.CourseWhereInput {
