@@ -121,7 +121,7 @@ export default function Search() {
     form.setFieldValue("page", 0);
     const courses = await fetchCourses(0);
     setSearchResults(courses);
-    setHasMoreCourses(true);
+    setHasMoreCourses(courses.length !== 0);
     setIsLoading(false);
   }
 
