@@ -25,6 +25,7 @@ import {
   IconAdjustmentsHorizontal,
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { DEFAULT_PREREQUISITES_TEXT, DEFAULT_TERM_TEXT } from "@/lib/const";
 
 export default function SearchForm({
   form,
@@ -136,7 +137,7 @@ export default function SearchForm({
             />
             <TextInput
               placeholder="E.g. CS 122A, CS 132"
-              label="Has none of the prerequisites (separated by commas):"
+              label={`Has none of the prerequisites (separated by commas, or ${DEFAULT_PREREQUISITES_TEXT} for no prerequisites):`}
               {...form.getInputProps("prerequisitesNot")}
             />
             <MultiSelect
@@ -154,7 +155,7 @@ export default function SearchForm({
               nothingFound="Nothing found"
             />
             <Select
-              data={[{ value: "", label: "Any" }].concat(
+              data={[{ value: "", label: `${DEFAULT_TERM_TEXT}` }].concat(
                 filterOptions?.terms?.map((term) => ({
                   value: `${term.year} ${term.quarter}`,
                   label: `${term.year} ${term.quarter}`,

@@ -15,6 +15,7 @@ import SearchResults from "./SearchResults";
 import { useForm } from "@mantine/form";
 
 export default function Search() {
+  const DEFAULT_PAGE_SIZE = 20;
   const form = useForm<SearchParams>({
     initialValues: {
       searchQuery: "",
@@ -34,7 +35,7 @@ export default function Search() {
       orderBy: "department",
       orderByDirection: "asc",
       page: 0,
-      pageSize: 20,
+      pageSize: DEFAULT_PAGE_SIZE,
     },
   });
 
@@ -121,7 +122,9 @@ export default function Search() {
     form.setFieldValue("page", 0);
     const courses = await fetchCourses(0);
     setSearchResults(courses);
-    setHasMoreCourses(courses.length !== 0);
+    setHasMoreCourses(
+      courses.length >= (form.values.pageSize || DEFAULT_PAGE_SIZE)
+    );
     setIsLoading(false);
   }
 

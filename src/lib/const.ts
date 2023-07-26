@@ -1,0 +1,3 @@
+export const DEFAULT_RESTRICTION_TEXT = "ANY";
+export const DEFAULT_PREREQUISITES_TEXT = "ANY";
+export const DEFAULT_TERM_TEXT = "ANY";

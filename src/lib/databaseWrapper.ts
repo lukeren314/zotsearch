@@ -22,6 +22,7 @@ import {
 import { fetchCourseTerms, fetchCoursesRaw, fetchGradeRaws } from "@/lib/api";
 import prisma from "./prisma";
 import { removeStopwords } from "stopword";
+import { DEFAULT_PREREQUISITES_TEXT, DEFAULT_RESTRICTION_TEXT, DEFAULT_TERM_TEXT } from "./const";
 const UPDATE_INTERVAL = 1000 * 60 * 60 * 24;
 
 class DatabaseWrapper {
@@ -48,7 +49,9 @@ class DatabaseWrapper {
     }
     this._updateMetadataLastChecked(metadata);
     const termString = await this._getNewestTermString();
-    if (termString == this._getTermString(metadata.lastYear, metadata.lastQuarter)) {
+    if (
+      termString == this._getTermString(metadata.lastYear, metadata.lastQuarter)
+    ) {
       return false;
     }
     this._updateMetadataLastTerm(metadata, this._getTerm(termString));
@@ -97,7 +100,7 @@ class DatabaseWrapper {
     return await this.db.courseLevel.findMany();
   }
   public async getGes(): Promise<CourseGe[]> {
-    return await this.db.courseGe.findMany();
+    return await this.db.courseGe.findMany({ orderBy: { text: "asc" } });
   }
   public async getTerms(): Promise<Term[]> {
     return await this.db.term.findMany();
@@ -483,13 +486,21 @@ class DatabaseWrapper {
       andInput.push({ unitsMin: { lte: filters.unitsMax } });
     }
     if (filters.prerequisitesNot && filters.prerequisitesNot.length) {
-      const prerequisitesNotList = this._getCourseList(
-        filters.prerequisitesNot
-      );
-      notInput.push({ prerequisites: { hasSome: prerequisitesNotList } });
+      if (filters.prerequisitesNot.trim() === DEFAULT_PREREQUISITES_TEXT) {
+        notInput.push({ prerequisites: { isEmpty: false } });
+      } else {
+        const prerequisitesNotList = this._getCourseList(
+          filters.prerequisitesNot
+        );
+        notInput.push({ prerequisites: { hasSome: prerequisitesNotList } });
+      }
     }
     if (filters.restrictionsNot && filters.restrictionsNot.length) {
-      notInput.push({ restrictions: { hasSome: filters.restrictionsNot } });
+      if (filters.restrictionsNot.indexOf(DEFAULT_RESTRICTION_TEXT) > -1) {
+        andInput.push({ restrictionText: { equals: "" } });
+      } else {
+        notInput.push({ restrictions: { hasSome: filters.restrictionsNot } });
+      }
     }
     // if (filters.ignore && filters.ignore.length) {
     //   notInput.push({ departmentNumber: { in: filters.ignore } });

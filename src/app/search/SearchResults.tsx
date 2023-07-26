@@ -5,6 +5,7 @@ import {
   Stack,
   Center,
   ScrollArea,
+  Text,
 } from "@mantine/core";
 import { Course } from "@prisma/client";
 import InfiniteScroll from "react-infinite-scroller";
@@ -30,6 +31,7 @@ export default function SearchResults({
           <Loader />
         </Center>
       ) : (
+        searchResults.length > 0 ?
         <ScrollArea>
           <InfiniteScroll
             pageStart={0}
@@ -48,7 +50,7 @@ export default function SearchResults({
               </Center>
             ) : null}
           </InfiniteScroll>
-        </ScrollArea>
+        </ScrollArea> : <Text ta="center">No results found!</Text>
       )}
     </Container>
   );

@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import database from "@/lib/database";
+import { Restriction } from "@prisma/client";
+import { DEFAULT_RESTRICTION_TEXT } from "@/lib/const";
 
 export async function GET(request: NextRequest) {
-  const restrictions = await database.getRestrictions();
+  const DEFAULT_RESTRICTION: Restriction = { text: DEFAULT_RESTRICTION_TEXT };
+  const restrictions = [DEFAULT_RESTRICTION].concat(
+    await database.getRestrictions()
+  );
   const departments = await database.getDepartments();
   const schools = await database.getSchools();
   const courseLevels = await database.getCourseLevels();
@@ -14,6 +19,6 @@ export async function GET(request: NextRequest) {
     schools,
     courseLevels,
     terms,
-    ges
+    ges,
   });
 }

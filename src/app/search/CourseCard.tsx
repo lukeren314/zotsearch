@@ -84,7 +84,7 @@ export default function CourseCard({ course }: { course: Course }) {
             <Container>
               <Select
                 data={
-                  course.instructors?.sort().map((instructor, index) => ({
+                  course.instructors?.map((instructor, index) => ({
                     label: instructor,
                     value: index.toString(),
                   })) || []
@@ -92,6 +92,12 @@ export default function CourseCard({ course }: { course: Course }) {
                 value={gradeIndex.toString()}
                 onChange={(index) => index && setGradeIndex(parseInt(index))}
               />
+              <Text ta="center">
+                Instructor Average GPA:{" "}
+                {course.averageGPAs && course.averageGPAs.length
+                  ? course.averageGPAs[gradeIndex].toFixed(2)
+                  : "N/A"}
+              </Text>
               <ResponsiveContainer width="100%" height={300}>
                 <BarChart
                   data={[
@@ -145,7 +151,8 @@ export default function CourseCard({ course }: { course: Course }) {
                 </BarChart>
               </ResponsiveContainer>
               <Text ta="center">
-                Average GPA: {course.averageGPA.toFixed(2) || "N/A"}
+                Overall Course Average GPA:{" "}
+                {course.averageGPA.toFixed(2) || "N/A"}
               </Text>
             </Container>
           ) : (
