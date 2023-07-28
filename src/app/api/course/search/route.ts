@@ -11,13 +11,12 @@ export async function GET(request: NextRequest) {
       .get("department")
       ?.split(",")
       .filter((s) => s) || undefined;
-  params.number = searchParams.get("number") || undefined;
+  params.number = searchParams.get("number")?.toUpperCase() || undefined;
   params.schoolsAny =
     searchParams
       .get("school")
       ?.split(",")
       .filter((s) => s) || undefined;
-  params.title = searchParams.get("title") || undefined;
   params.courseLevel = searchParams.get("courseLevel") || undefined;
   const unitsMin = searchParams.get("unitsMin");
   if (unitsMin) {
@@ -27,7 +26,7 @@ export async function GET(request: NextRequest) {
   if (unitsMax) {
     params.unitsMax = parseInt(unitsMax);
   }
-  params.prerequisitesNot = searchParams.get("prerequisitesNot") || undefined;
+  params.prerequisitesNot = searchParams.get("prerequisitesNot")?.toUpperCase() || undefined;
   params.restrictionsNot =
     searchParams
       .get("restrictionsNot")
@@ -58,6 +57,7 @@ export async function GET(request: NextRequest) {
   if (pageSize) {
     params.pageSize = parseInt(pageSize);
   }
+  console.log(params);
   const courses = await database.searchCourses(params);
   return NextResponse.json({ courses });
 }

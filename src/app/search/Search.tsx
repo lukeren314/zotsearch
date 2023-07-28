@@ -22,7 +22,6 @@ export default function Search() {
       departmentsAny: [],
       number: "",
       schoolsAny: [],
-      title: "",
       courseLevel: "",
       unitsMin: undefined,
       unitsMax: undefined,
@@ -77,7 +76,6 @@ export default function Search() {
     const urlSearchParams = new URLSearchParams({
       searchQuery: form.values.searchQuery || "",
       number: form.values.number || "",
-      title: form.values.title || "",
       courseLevel: form.values.courseLevel || "",
       term: form.values.term || "",
       orderBy: form.values.orderBy || "",

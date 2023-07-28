@@ -78,7 +78,8 @@ export default function SearchForm({
                   label: `(${department.text}) ${department.name}`,
                 })) || []
               }
-              label="Department"
+              searchable
+              label="Any of the Departments"
               {...form.getInputProps("departmentsAny")}
               nothingFound="Nothing found"
             />
@@ -86,11 +87,6 @@ export default function SearchForm({
               placeholder="E.g. 122A"
               label="Course Number"
               {...form.getInputProps("number")}
-            />
-            <TextInput
-              placeholder="E.g. Introduction to Data Management"
-              label="Course Title"
-              {...form.getInputProps("title")}
             />
             <MultiSelect
               data={
@@ -168,6 +164,7 @@ export default function SearchForm({
             <Space h="md" />
             <Group>
               <Button
+                type="submit"
                 onClick={() => {
                   close();
                   searchCourses(form.values);

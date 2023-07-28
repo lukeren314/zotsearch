@@ -86,7 +86,6 @@ export interface SearchParams {
   departmentsAny?: string[];
   number?: string;
   schoolsAny?: string[];
-  title?: string;
   courseLevel?: string;
   unitsMin?: number;
   unitsMax?: number;

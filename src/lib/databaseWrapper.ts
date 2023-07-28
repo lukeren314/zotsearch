@@ -22,7 +22,11 @@ import {
 import { fetchCourseTerms, fetchCoursesRaw, fetchGradeRaws } from "@/lib/api";
 import prisma from "./prisma";
 import { removeStopwords } from "stopword";
-import { DEFAULT_PREREQUISITES_TEXT, DEFAULT_RESTRICTION_TEXT, DEFAULT_TERM_TEXT } from "./const";
+import {
+  DEFAULT_PREREQUISITES_TEXT,
+  DEFAULT_RESTRICTION_TEXT,
+  DEFAULT_TERM_TEXT,
+} from "./const";
 const UPDATE_INTERVAL = 1000 * 60 * 60 * 24;
 
 class DatabaseWrapper {
@@ -438,6 +442,8 @@ class DatabaseWrapper {
     if (params.orderBy == "averageGPA") {
       return [
         { averageGPA: params.orderByDirection },
+        { department: params.orderByDirection },
+        { number: params.orderByDirection },
       ];
     }
     return;
